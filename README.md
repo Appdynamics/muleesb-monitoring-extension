@@ -34,8 +34,8 @@ In the AppDynamics Metric Browser, look for: Application Infrastructure Performa
 Note : Please make sure not to use tab (\t) while editing yaml files. You can validate the yaml file using a [yaml validator](http://yamllint.com/)
 
 1. Configure the Mule ESB Extension by editing the config.yml file in `<MACHINE_AGENT_HOME>/monitors/MuleESBMonitor/`.
-2. Specify the Mule ESB instance host, JMX port, username and password in the config.yml. By default the extension will fetch metrics from type org.mule.Statistics type for all the domains under Mule. It also fetches memory metrics of the Mule instance.
-3. We can exclude some domains by specifying them in the `excludeDomains` configuration. 
+2. Specify the Mule ESB instance host, JMX port, username and password in the config.yml. By default the extension will fetch metrics from org.mule.Statistics type for all the domains under Mule. It also fetches memory metrics of the Mule instance.
+3. We can exclude domains by specifying them in the `excludeDomains` configuration. 
    For eg.
    ```
         # Mule ESB instance particulars
@@ -71,21 +71,21 @@ Note : Please make sure not to use tab (\t) while editing yaml files. You can va
 ##Metrics
 
 ###Domain metrics
-{Domain_Name}/ExecutionErrors
-{Domain_Name}/FatalErrors
-{Domain_Name}/ProcessedEvents
-{Domain_Name}/MaxProcessingTime
-{Domain_Name}/TotalProcessingTime
-{Domain_Name}/SyncEventsReceived
-{Domain_Name}/TotalEventsReceived
-{Domain_Name}/MinProcessingTime
-{Domain_Name}/AsyncEventsReceived
-{Domain_Name}/AverageProcessingTime
+* {Domain_Name}/ExecutionErrors
+* {Domain_Name}/FatalErrors
+* {Domain_Name}/ProcessedEvents
+* {Domain_Name}/MaxProcessingTime
+* {Domain_Name}/TotalProcessingTime
+* {Domain_Name}/SyncEventsReceived
+* {Domain_Name}/TotalEventsReceived
+* {Domain_Name}/MinProcessingTime
+* {Domain_Name}/AsyncEventsReceived
+* {Domain_Name}/AverageProcessingTime
 
 ###Memory Metrics
-MaxMemory
-TotalMemory
-FreeMemory
+* MaxMemory
+* TotalMemory
+* FreeMemory
 
 ## Custom Dashboard
 ![]()
