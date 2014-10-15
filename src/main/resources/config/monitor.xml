@@ -1,0 +1,23 @@
+    <monitor>
+        <name>MuleESBMonitor</name>
+        <type>managed</type>
+        <description>Mule ESB monitor</description>
+        <monitor-configuration></monitor-configuration>
+        <monitor-run-task>
+                <execution-style>periodic</execution-style>
+                <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
+                <name>MuleESB Monitor Run Task</name>
+                <display-name>MuleESB Monitor Task</display-name>
+                <description>MuleESB Monitor Task</description>
+                <type>java</type>
+                <execution-timeout-in-secs>60</execution-timeout-in-secs>
+                <task-arguments>
+                    <!-- config file-->
+                    <argument name="config-file" is-required="true" default-value="monitors/MuleESBMonitor/config.yml" />
+                </task-arguments>
+                <java-task>
+                        <classpath>muleesb-monitoring-extension.jar</classpath>
+                        <impl-class>com.appdynamics.monitors.muleesb.MuleESBMonitor</impl-class>
+                </java-task>
+        </monitor-run-task>
+</monitor>
