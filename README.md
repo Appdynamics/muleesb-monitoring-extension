@@ -88,7 +88,7 @@ Note : Please make sure not to use tab (\t) while editing yaml files. You can va
 * FreeMemory
 
 ## Custom Dashboard
-![]()
+![](https://raw.githubusercontent.com/Appdynamics/muleesb-monitoring-extension/master/mule_custom_dashboard.png)
 
 ##Contributing
 
