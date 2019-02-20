@@ -31,8 +31,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MuleESBMonitor extends AManagedMonitor {
     private static final Logger logger = Logger.getLogger(MuleESBMonitor.class);
@@ -73,7 +75,6 @@ public class MuleESBMonitor extends AManagedMonitor {
     private Map<String, Number> populateStats(Configuration config) {
 
         Map<String, Number> metrics = new HashMap<String, Number>();
-
         Server server = config.getServer();
         JMXConnector jmxConnector = null;
         MBeanServerConnection mBeanServerConnection = null;
@@ -92,20 +93,24 @@ public class MuleESBMonitor extends AManagedMonitor {
             String domainMatcher = mbeans.getDomainMatcher();
             Set<String> types = mbeans.getTypes();
             Set<String> excludeDomains = mbeans.getExcludeDomains();
+            //Adding support for Flows filtering
+            Set<String> flows = mbeans.getFlows();
 
             for (String type : types) {
                 String mbeanMatcher = buildMbeanMatcher(domainMatcher, type);
-
                 try {
+                    logger.debug("started processing the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
                     Set<ObjectInstance> objectInstances = JMXUtil.queryMbeans(mBeanServerConnection, mbeanMatcher);
-                    Map<String, Number> curMetrics = extractMetrics(mBeanServerConnection, objectInstances, excludeDomains);
+                    Map<String, Number> curMetrics = extractMetrics(mBeanServerConnection, objectInstances, excludeDomains, flows);
                     metrics.putAll(curMetrics);
+                    logger.debug("Successfully processed the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
                 } catch (IOException e) {
                     logger.error("Error getting bean with type :" + type, e);
                 } catch (MalformedObjectNameException e) {
                     logger.error("Error getting bean with type :" + type, e);
+                } catch (Exception e) {
+                    logger.error("Error in Exception getting bean with type :" + type, e);
                 }
-
             }
         } finally {
             if (jmxConnector != null) {
@@ -123,14 +128,18 @@ public class MuleESBMonitor extends AManagedMonitor {
         Map<String, Number> memoryMetrics = new HashMap<String, Number>();
         try {
             Set<ObjectInstance> mBeans = mBeanServerConnection.queryMBeans(new ObjectName("Mule.default:name=MuleContext,*"), null);
-            ObjectInstance objectInstance = mBeans.iterator().next();
-            ObjectName objectName = objectInstance.getObjectName();
-            Object freeMemory = mBeanServerConnection.getAttribute(objectName, "FreeMemory");
-            memoryMetrics.put("FreeMemory", (Number) freeMemory);
-            Object maxMemory = mBeanServerConnection.getAttribute(objectName, "MaxMemory");
-            memoryMetrics.put("MaxMemory", (Number) maxMemory);
-            Object totalMemory = mBeanServerConnection.getAttribute(objectName, "TotalMemory");
-            memoryMetrics.put("TotalMemory", (Number) totalMemory);
+            Iterator<ObjectInstance> iterator = mBeans.iterator();
+            if (iterator.hasNext()) {
+                ObjectInstance objectInstance = iterator.next();
+                ObjectName objectName = objectInstance.getObjectName();
+                Object freeMemory = mBeanServerConnection.getAttribute(objectName, "FreeMemory");
+                memoryMetrics.put("FreeMemory", (Number) freeMemory);
+                Object maxMemory = mBeanServerConnection.getAttribute(objectName, "MaxMemory");
+                memoryMetrics.put("MaxMemory", (Number) maxMemory);
+                Object totalMemory = mBeanServerConnection.getAttribute(objectName, "TotalMemory");
+                memoryMetrics.put("TotalMemory", (Number) totalMemory);
+                logger.debug("successfully collected memory metrics for : " + mBeanServerConnection.toString());
+            }
         } catch (Exception e) {
             logger.error("Unable to get memory stats", e);
         }
@@ -143,29 +152,47 @@ public class MuleESBMonitor extends AManagedMonitor {
         return sb.toString();
     }
 
-    private Map<String, Number> extractMetrics(MBeanServerConnection mBeanServerConnection, Set<ObjectInstance> objectInstances, Set<String> excludeDomains) {
+    private Map<String, Number> extractMetrics(MBeanServerConnection mBeanServerConnection, Set<ObjectInstance> objectInstances, Set<String> excludeDomains, Set<String> flows) {
         Map<String, Number> metrics = new HashMap<String, Number>();
-
         Map<String, Number> memoryMetrics = getMemoryMetrics(mBeanServerConnection);
         metrics.putAll(memoryMetrics);
-
         for (ObjectInstance objectInstance : objectInstances) {
             ObjectName objectName = objectInstance.getObjectName();
             String domain = objectName.getDomain();
+            logger.debug(objectName + " and processing for domain => " + domain);
             if (!isDomainExcluded(objectName, excludeDomains)) {
                 try {
-                    MBeanAttributeInfo[] attributes = mBeanServerConnection.getMBeanInfo(objectName).getAttributes();
-
-                    for (MBeanAttributeInfo mBeanAttributeInfo : attributes) {
-                        Object attribute = mBeanServerConnection.getAttribute(objectName, mBeanAttributeInfo.getName());
-                        String metricKey = getMetricsKey(objectName, mBeanAttributeInfo);
-                        if (attribute != null && attribute instanceof Number) {
-                            metrics.put(metricKey, (Number) attribute);
-                        } else {
-                            logger.info("Excluded " + metricKey + " as its value can not be converted to number");
-                        }
+                    String objectNameSuffix = objectName.toString().split(",")[1];
+                    Boolean isFlow = false;
+                    String metricPathStr;
+                    String flow = "";
+                    if (objectNameSuffix.contains("Flow")) {
+                        isFlow = true;
+                        flow = objectNameSuffix.split("=")[1];
+                        metricPathStr = objectNameSuffix.split("=")[1].replaceAll("[:/\"]", "");
+                    } else {
+                        metricPathStr = objectNameSuffix.split("=")[1].replaceAll("[:/\"]", "");
                     }
-
+                    if ((isFlow && isFlowIncluded(flows, flow)) || (!metricPathStr.equals("") && !isFlow)) {
+                        try {
+                            MBeanAttributeInfo[] attributes = mBeanServerConnection.getMBeanInfo(objectName).getAttributes();
+                            for (MBeanAttributeInfo mBeanAttributeInfo : attributes) {
+                                logger.debug("collecting metrics for the attribute : " + mBeanAttributeInfo);
+                                Object attribute = mBeanServerConnection.getAttribute(objectName, mBeanAttributeInfo.getName());
+                                String metricKey = getMetricsKey(objectName, metricPathStr, mBeanAttributeInfo);
+                                logger.debug("collecting metrics for domain: " + domain + " with " + attribute + " and  : metrickey : " + metricKey);
+                                if (attribute != null && attribute instanceof Number) {
+                                    metrics.put(metricKey, (Number) attribute);
+                                } else {
+                                    logger.info("Excluded " + metricKey + " as its value can not be converted to number");
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error("Failed to collect attribubted for the flow : " + flow, e);
+                        }
+                    } else {
+                        logger.info("Flow not found: " + flow + "metric path String " + metricPathStr);
+                    }
                 } catch (Exception e) {
                     logger.error("Unable to get info for object " + objectInstance.getObjectName(), e);
                 }
@@ -176,14 +203,23 @@ public class MuleESBMonitor extends AManagedMonitor {
         return metrics;
     }
 
+    private boolean isFlowIncluded(Set<String> flows, String flow) {
+        for (String currFlow : flows) {
+            Pattern p = Pattern.compile(currFlow);
+            if (p.matcher(flow).matches())
+                return true;
+        }
+        return false;
+    }
+
     private boolean isDomainExcluded(ObjectName objectName, Set<String> excludeDomains) {
         String domain = objectName.getDomain();
         return excludeDomains.contains(domain);
     }
 
-    private String getMetricsKey(ObjectName objectName, MBeanAttributeInfo attr) {
+    private String getMetricsKey(ObjectName objectName, String flowPath, MBeanAttributeInfo attr) {
         StringBuilder metricsKey = new StringBuilder();
-        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR).append(attr.getName());
+        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR).append(flowPath).append(METRICS_SEPARATOR).append(attr.getName());
         return metricsKey.toString();
     }
 
@@ -239,7 +275,7 @@ public class MuleESBMonitor extends AManagedMonitor {
     public static void main(String[] args) throws TaskExecutionException {
 
         Map<String, String> taskArgs = new HashMap<String, String>();
-        taskArgs.put(CONFIG_ARG, "/home/satish/AppDynamics/Code/extensions/muleesb-monitoring-extension/src/main/resources/config/config.yml");
+        taskArgs.put(CONFIG_ARG, "src/main/resources/config/config.yml");
 
         com.appdynamics.monitors.muleesb.MuleESBMonitor muleesbMonitor = new com.appdynamics.monitors.muleesb.MuleESBMonitor();
         muleesbMonitor.execute(taskArgs, null);

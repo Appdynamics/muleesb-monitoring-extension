@@ -10,6 +10,7 @@ mbeans:
     domainMatcher: "Mule.*"
     types: [org.mule.Statistics]
     excludeDomains: [Mule..agent,Mule.default]
+    flows: [.*]
 
 #prefix used to show up metrics in AppDynamics
 metricPrefix:  "Custom Metrics|Mule ESB|"

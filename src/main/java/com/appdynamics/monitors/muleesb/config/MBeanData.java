@@ -14,6 +14,7 @@ public class MBeanData {
     private String domainMatcher;
     private Set<String> types = new HashSet<String>();
     private Set<String> excludeDomains = new HashSet<String>();
+    private Set<String> flows = new HashSet<String>();
 
     public String getDomainMatcher() {
         return domainMatcher;
@@ -38,4 +39,8 @@ public class MBeanData {
     public void setExcludeDomains(Set<String> excludeDomains) {
         this.excludeDomains = excludeDomains;
     }
+
+    public Set<String> getFlows(){return flows; }
+
+    public void setFlows(Set<String> flows){this.flows = flows; }
 }
