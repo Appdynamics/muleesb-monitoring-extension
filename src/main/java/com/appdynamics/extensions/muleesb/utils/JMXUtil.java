@@ -4,7 +4,7 @@
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
-package com.appdynamics.monitors.muleesb;
+package com.appdynamics.extensions.muleesb.utils;
 
 import com.google.common.base.Strings;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -33,7 +33,7 @@ public class JMXUtil {
         String jmxUrl = buildUrl(host, port);
         JMXServiceURL url = new JMXServiceURL(jmxUrl);
         final Map<String, Object> env = new HashMap<String, Object>();
-        JMXConnector connector = null;
+        JMXConnector connector;
         if (!Strings.isNullOrEmpty(username)) {
             env.put(JMXConnector.CREDENTIALS, new String[]{username, password});
             connector = JMXConnectorFactory.connect(url, env);

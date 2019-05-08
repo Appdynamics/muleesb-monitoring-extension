@@ -1,0 +1,40 @@
+ObjectInstances:
+  - ObjectInstance: Mule.patient-management-api-1.2.10:type=org.mule.Statistics,Flow="get:/apistatus:PatientManagement-conf"
+    domain: Mule.patient-management-api-1.2.10
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9
+  - ObjectInstance: Mule.create-audit-api-1.2.9:type=org.mule.Statistics,Application="application totals"
+    domain: Mule.create-audit-api-1.2.9
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9
+  - ObjectInstance: Mule.roche-api-1.2.11:type=org.mule.Statistics,Flow="roche-api-newFlow"
+    domain: Mule.roche-api-1.2.11
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9

@@ -19,12 +19,12 @@
                 <type>java</type>
                 <execution-timeout-in-secs>60</execution-timeout-in-secs>
                 <task-arguments>
-                    <!-- config file-->
+                    <!-- conf file-->
                     <argument name="config-file" is-required="true" default-value="monitors/MuleESBMonitor/config.yml" />
                 </task-arguments>
                 <java-task>
                         <classpath>muleesb-monitoring-extension.jar</classpath>
-                        <impl-class>com.appdynamics.monitors.muleesb.MuleESBMonitor</impl-class>
+                        <impl-class>com.appdynamics.extensions.muleesb.MuleESBMonitor</impl-class>
                 </java-task>
         </monitor-run-task>
 </monitor>

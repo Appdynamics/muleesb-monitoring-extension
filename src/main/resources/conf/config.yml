@@ -1,0 +1,114 @@
+
+metricPrefix:  "Custom Metrics|Mule ESB|"
+# Mule ESB instance particulars
+servers:
+   - displayName: "Mule Server" # mandatory
+     host: localhost
+     port: 1098
+     username: ""
+     password: ""
+     # Mule ESB MBeans
+     mbeanDetails:
+        domainMatcher: "Mule.*"
+        types: [org.mule.Statistics]
+        excludeDomains: []
+        flows: [.*]
+
+#                                      List of metrics
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Glossary of terms(These terms are used as properties for each metric):
+#   alias
+#   aggregationType
+#   timeRollUpType
+#   clusterRollUpType                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+#   multiplier -->not for derived metrics
+#   convert --> not for derived metrics
+#   delta --> not for derived metrics
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+metrics:
+    memoryMetrics:
+      - name: "FreeMemory"
+        alias: "FreeMemory"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "MaxMemory"
+        alias: "MaxMemory"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "TotalMemory"
+        alias: "TotalMemory"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+    eventMetrics:
+      - name: "AverageProcessingTime"
+        alias: "AverageProcessingTime"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "ProcessedEvents"
+        alias: "ProcessedEvents"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "MaxProcessingTime"
+        alias: "MaxProcessingTime"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "MinProcessingTime"
+        alias: "MinProcessingTime"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "TotalProcessingTime"
+        alias: "TotalProcessingTime"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "ExecutionErrors"
+        alias: "ExecutionErrors"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "FatalErrors"
+        alias: "FatalErrors"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "AsyncEventsReceived"
+        alias: "AsyncEventsReceived"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "SyncEventsReceived"
+        alias: "SyncEventsReceived"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+      - name: "TotalEventsReceived"
+        alias: "TotalEventsReceived"
+        aggregationType: "OBSERVATION"
+        timeRollUpType: "AVERAGE"
+        clusterRollUpType: "INDIVIDUAL"
+
+
+
+#TODO: use specific new Metric as the replacer needs to be implemented
+# Note: If the current "metricPathReplacements" is not working on your current machine,
+# please add escape charaters "\\" before your value. It changes from OS to OS, some need it, some don't
+# For Example, replace: "%" -> Becomes -> replace: "\\%"
+metricPathReplacements:
+   - replace: "\""
+     replaceWith: ""
+   - replace: "="
+     replaceWith: "|"
+
+
+# Each server instance needs 3 threads to call the mule ESB.
+# So, please change the value accordingly(Based on the number of server instances you are monitoring).
+numberOfThreads: 6
+
+

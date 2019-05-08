@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <property name="target.dir" value="/Users/prashant.mehta/dev/muleesb-monitoring-extension/target/MuleESBMonitor"/>
+  <mkdir dir="${target.dir}"/>
+  <copy todir="${target.dir}">
+    <fileset includes="monitor.xml" dir="src/main/resources/config"/>
+    <fileset includes="config.yml" dir="src/main/resources/config"/>
+    <fileset includes="LICENSE.txt,NOTICE.txt" dir="/Users/prashant.mehta/dev/muleesb-monitoring-extension"/>
+  </copy>
+  <copy todir="${target.dir}">
+    <fileset includes="muleesb-monitoring-extension.jar" dir="/Users/prashant.mehta/dev/muleesb-monitoring-extension/target"/>
+  </copy>
+  <zip destfile="${target.dir}.zip">
+    <zipfileset prefix="MuleESBMonitor/" filemode="755" dir="${target.dir}"/>
+  </zip>
+  <delete dir="${target.dir}"/>
+</target>
+</project>
