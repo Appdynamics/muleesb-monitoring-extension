@@ -12,37 +12,42 @@ import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.metrics.Metric;
-import static com.appdynamics.extensions.muleesb.collector.MetricsCollector.getMetricAfterCharacterReplacement;
-import com.appdynamics.extensions.muleesb.utils.Constant;
-import static com.appdynamics.extensions.muleesb.utils.Constant.ENCRYPTION_KEY;
-import static com.appdynamics.extensions.muleesb.utils.Constant.HEARTBEAT;
-import static com.appdynamics.extensions.muleesb.utils.Constant.METRICS_SEPARATOR;
+import com.appdynamics.extensions.muleesb.collectors.InstanceProcessor;
+import com.appdynamics.extensions.muleesb.collectors.MetricsCollector;
+import com.appdynamics.extensions.muleesb.utils.Constants;
+import static com.appdynamics.extensions.muleesb.utils.Constants.DISPLAY_NAME;
+import static com.appdynamics.extensions.muleesb.utils.Constants.ENCRYPTION_KEY;
+import static com.appdynamics.extensions.muleesb.utils.Constants.HEARTBEAT;
+import static com.appdynamics.extensions.muleesb.utils.Constants.LANG_MEMORY_METRICS;
+import static com.appdynamics.extensions.muleesb.utils.Constants.METRICS_SEPARATOR;
+import static com.appdynamics.extensions.muleesb.utils.Constants.USERNAME;
 import com.appdynamics.extensions.muleesb.utils.JMXUtil;
 import com.appdynamics.extensions.util.CryptoUtils;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanServerConnection;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class MuleESBMonitorTask implements AMonitorTaskRunnable {
     private static final Logger logger = ExtensionsLoggerFactory.getLogger(MuleESBMonitorTask.class);
+
     private Map<String, ?> server;
     private MonitorContextConfiguration configuration;
     private MetricWriteHelper metricWriteHelper;
+    private JMXConnectionAdapter jmxConnectionAdapter;
     private String metricPrefix;
     private BigInteger heartBeatValue = BigInteger.ZERO;
 
@@ -50,49 +55,49 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         this.configuration = monitorContextConfiguration;
         this.server = server;
         this.metricWriteHelper = metricWriteHelper;
-        this.metricPrefix = configuration.getMetricPrefix() + METRICS_SEPARATOR + this.server.get("displayName") + METRICS_SEPARATOR;
+        this.metricPrefix = configuration.getMetricPrefix() + METRICS_SEPARATOR + this.server.get(DISPLAY_NAME) + METRICS_SEPARATOR;
     }
 
     public void run() {
         try {
+            getJMXConnectionAdapter();
             populateStats();
             heartBeatValue = BigInteger.ONE;
-            logger.info("Completed the Mule esb Monitoring task");
+            logger.info("Completed the Mule esb Monitoring task for {}", server.get(DISPLAY_NAME));
+        } catch (NumberFormatException e) {
+            logger.error("Number format exception while creating JMX connection to server {}", server.get(DISPLAY_NAME), e);
         } catch (Exception e) {
             logger.error("Error while running the task " + server.get("displayName") + e);
-       }
+        }
     }
 
     private void populateStats() {
-
         JMXConnector jmxConnector = null;
-        MBeanServerConnection mBeanServerConnection = null;
         List<Metric> metrics = Lists.newArrayList();
         try {
             try {
-                Map<String, String> requestMap = buildRequestMap();
-                jmxConnector = JMXUtil.getJmxConnector(requestMap.get(Constant.HOST), Integer.parseInt(requestMap.get(Constant.PORT)), requestMap.get(Constant.USERNAME), requestMap.get(Constant.PASSWORD));
-                mBeanServerConnection = jmxConnector.getMBeanServerConnection();
+                if (jmxConnectionAdapter != null)
+                    jmxConnector = jmxConnectionAdapter.open();
             } catch (IOException e) {
                 logger.error("Error JMX-ing into Mule ESB Server ", e);
-                metrics.add(new Metric(Constant.METRICS_COLLECTED, Constant.ERROR_VALUE, metricPrefix + Constant.METRICS_COLLECTED));
+                metrics.add(new Metric(Constants.METRICS_COLLECTED, Constants.ERROR_VALUE, metricPrefix + Constants.METRICS_COLLECTED));
             }
 
-            Map<String, ?> mbeanDetails = (Map<String, String>) server.get(Constant.MBEAN_DETAILS);
-
-            String domainMatcher = (String) mbeanDetails.get(Constant.DOMAIN_MATCHER);
-            List<String> types = (List<String>) mbeanDetails.get(Constant.TYPES);
-            List<String> excludeDomains = (List<String>) mbeanDetails.get(Constant.EXCLUDE_DOMAINS);
+            Map<String, ?> mbeanDetails = (Map<String, String>) server.get(Constants.MBEAN_DETAILS);
+            String domainMatcher = (String) mbeanDetails.get(Constants.DOMAIN_MATCHER);
+            List<String> types = (List<String>) mbeanDetails.get(Constants.TYPES);
+            List<String> excludeDomains = (List<String>) mbeanDetails.get(Constants.EXCLUDE_DOMAINS);
             //Adding support for Flows filtering
-            List<String> flows = (List<String>) mbeanDetails.get(Constant.FLOWS);
+            List<String> flows = (List<String>) mbeanDetails.get(Constants.FLOWS);
 
             for (String type : types) {
                 String mbeanMatcher = buildMbeanMatcher(domainMatcher, type);
                 try {
-                    logger.debug("started processing the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
-                    Set<ObjectInstance> objectInstances = JMXUtil.queryMbeans(mBeanServerConnection, mbeanMatcher);
-                    extractMetrics(mBeanServerConnection, objectInstances, excludeDomains, flows, metrics);
-                    logger.debug("Successfully processed the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
+                    logger.debug("started metricsCollector the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
+                    Set<ObjectInstance> objectInstances = jmxConnectionAdapter.queryMBeans(jmxConnector, ObjectName.getInstance(mbeanMatcher));
+                    MetricsCollector metricsCollector = new MetricsCollector(configuration, jmxConnectionAdapter, jmxConnector, metricPrefix);
+                    metrics.addAll(metricsCollector.initMetricsCollection(objectInstances, excludeDomains, flows));
+                    logger.debug("Successfully processed metricsCollector for the type : " + type + "with mbeanMatcher : " + mbeanMatcher);
                 } catch (IOException e) {
                     logger.error("Error getting bean with type :" + type, e);
                 } catch (MalformedObjectNameException e) {
@@ -101,8 +106,10 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
                     logger.error("Error in Exception getting bean with type :" + type, e);
                 }
             }
+//          Collect the composite memory metrics as configures in the metrics.xml
+            metrics.addAll(collectCompositeMemoryInstanceMetrics(jmxConnector));
         } catch (Exception e) {
-            logger.error("Error while collecting the metrics for: " + server.get(Constant.DISPLAY_NAME));
+            logger.error("Error while collecting the metrics for: " + server.get(Constants.DISPLAY_NAME));
         } finally {
             if (jmxConnector != null) {
                 try {
@@ -115,72 +122,11 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         }
     }
 
-
-
-    private void extractMetrics(MBeanServerConnection mBeanServerConnection, Set<ObjectInstance> objectInstances, List<String> excludeDomains, List<String> flows, List<Metric> metrics) {
-        List<Map<String, String>> metricReplacer = (List<Map<String, String>>) configuration.getConfigYml().get(Constant.METRIC_PATH_REPLACEMENTS);
-        for (ObjectInstance objectInstance : objectInstances) {
-            ObjectName objectName = objectInstance.getObjectName();
-            String domain = objectName.getDomain();
-            List<Metric> memoryMetrics = getMemoryMetrics(mBeanServerConnection, domain);
-            metrics.addAll(memoryMetrics);
-            logger.debug(objectName + " and processing for domain => " + domain);
-            if (!isDomainExcluded(objectName, excludeDomains)) {
-                try {
-                    String objectNameSuffix = objectName.toString().split(",")[1];
-                    Boolean isFlow = false;
-                    String flow = "";
-                    if (objectNameSuffix.contains("Flow")) {
-                        isFlow = true;
-                        flow = objectNameSuffix.split("=")[1];
-                    }
-                    if ((isFlow && isFlowIncluded(flows, flow)) || (!objectNameSuffix.equals("") && !isFlow)) {
-                        try {
-                            MBeanAttributeInfo[] attributes = mBeanServerConnection.getMBeanInfo(objectName).getAttributes();
-                            for (MBeanAttributeInfo mBeanAttributeInfo : attributes) {
-                                logger.debug("collecting metrics for the attribute : " + mBeanAttributeInfo);
-                                Object attribute = mBeanServerConnection.getAttribute(objectName, mBeanAttributeInfo.getName());
-                                String metricKey = getMetricAfterCharacterReplacement(getMetricsKey(objectName, objectNameSuffix, mBeanAttributeInfo), metricReplacer);
-                                logger.debug("collecting metrics for domain: " + domain + " with " + attribute + " and  : metrickey : " + metricKey);
-                                if (attribute != null && attribute instanceof Number) {
-                                    metrics.add(new Metric(metricKey, attribute.toString(), metricPrefix + metricKey));
-                                } else {
-                                    logger.info("Excluded " + metricKey + " as its value can not be converted to number");
-                                }
-                            }
-                        } catch (Exception e) {
-                            logger.error("Failed to collect attributed for the flow : " + flow, e);
-                        }
-                    } else {
-                        logger.info("Flow not found: " + flow + "metric path String " + objectNameSuffix);
-                    }
-                } catch (Exception e) {
-                    logger.error("Unable to get info for object " + objectInstance.getObjectName(), e);
-                }
-            } else {
-                logger.info("Excluding domain: " + domain + " as configured");
-            }
-        }
-    }
-
-    private boolean isFlowIncluded(List<String> flows, String flow) {
-        for (String currFlow : flows) {
-            Pattern p = Pattern.compile(currFlow);
-            if (p.matcher(flow).matches())
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isDomainExcluded(ObjectName objectName, List<String> excludeDomains) {
-        String domain = objectName.getDomain();
-        return excludeDomains.contains(domain);
-    }
-
-    private String getMetricsKey(ObjectName objectName, String flowPath, MBeanAttributeInfo attr) {
-        StringBuilder metricsKey = new StringBuilder();
-        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR).append(flowPath).append(METRICS_SEPARATOR).append(attr.getName());
-        return metricsKey.toString();
+    private List<Metric> collectCompositeMemoryInstanceMetrics(JMXConnector jmxConnector) throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException, MalformedObjectNameException {
+        String langMemoryMbean = Constants.OBJECT_NAME;
+        Set<ObjectInstance> langMemoryInstances = jmxConnectionAdapter.queryMBeans(jmxConnector, ObjectName.getInstance(langMemoryMbean));
+        InstanceProcessor instanceProcessor = new InstanceProcessor(jmxConnectionAdapter, jmxConnector, JMXUtil.getAptMetricConfigAttr(configuration, LANG_MEMORY_METRICS).getMetricConfig(), metricPrefix);
+        return instanceProcessor.processInstance(langMemoryInstances.iterator().next());
     }
 
     private String buildMbeanMatcher(String domainMatcher, String type) {
@@ -189,40 +135,30 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         return sb.toString();
     }
 
-    private List<Metric> getMemoryMetrics(MBeanServerConnection mBeanServerConnection, String muledomain) {
-        List<Metric> memoryMetrics = new ArrayList<Metric>();
-        muledomain += Constant.MULE_CONTEXT;
-        try {
-            Iterator<ObjectInstance> instanceIterator = mBeanServerConnection.queryMBeans(new ObjectName(muledomain), null).iterator();
-            while (instanceIterator.hasNext()) {
-                ObjectInstance objectInstance = instanceIterator.next();
-                ObjectName objectName = objectInstance.getObjectName();
-                Object freeMemory = mBeanServerConnection.getAttribute(objectName, "FreeMemory");
-                memoryMetrics.add(new Metric("FreeMemory", freeMemory.toString(), metricPrefix + "FreeMemory"));
-                Object maxMemory = mBeanServerConnection.getAttribute(objectName, "MaxMemory");
-                memoryMetrics.add(new Metric("MaxMemory", maxMemory.toString(), metricPrefix + "MaxMemory"));
-                Object totalMemory = mBeanServerConnection.getAttribute(objectName, "TotalMemory");
-                memoryMetrics.add(new Metric("TotalMemory", totalMemory.toString(), metricPrefix + "TotalMemory"));
-                logger.debug("successfully collected memory metrics for : " + mBeanServerConnection.toString());
-            }
-        } catch (Exception e) {
-            logger.error("Unable to get memory stats", e);
+    private void getJMXConnectionAdapter() throws NumberFormatException {
+
+        String serviceUrl = (String) server.get(Constants.SERVICE_URL);
+        String host = (String) server.get(com.appdynamics.extensions.Constants.HOST);
+
+        if (Strings.isNullOrEmpty(serviceUrl) && Strings.isNullOrEmpty(host)) {
+            logger.info("JMX details not provided, not creating connection");
         }
-        return memoryMetrics;
+        try {
+            String portStr = server.get(com.appdynamics.extensions.Constants.PORT).toString();
+            int port = portStr != null ? Integer.parseInt(portStr) : -1;
+            String username = (String) server.get(USERNAME);
+            String password = getPassword(server);
+
+            jmxConnectionAdapter = JMXConnectionAdapter.create(serviceUrl, host, port, username, password);
+        } catch (MalformedURLException e) {
+            logger.error("Malformed Error while creating Jmx connection Adapter", e);
+        } catch (Exception e) {
+            logger.error("Error while creating Jmx connection Adapter", e);
+        }
     }
 
 
-    private Map<String, String> buildRequestMap() {
-        Map<String, String> requestMap = new HashMap();
-        requestMap.put(Constant.HOST, (String) server.get(Constant.HOST));
-        requestMap.put(Constant.PORT, String.valueOf(server.get(Constant.PORT)));
-        requestMap.put(Constant.USERNAME, (String) server.get(Constant.USERNAME));
-        requestMap.put(Constant.PASSWORD, getPassword((Map<String, String>) server));
-        return requestMap;
-    }
-
-
-    private String getPassword(Map<String, String> server) {
+    private String getPassword(Map server) {
         if (configuration.getConfigYml().get(ENCRYPTION_KEY) != null) {
             String encryptionKey = (String) configuration.getConfigYml().get(ENCRYPTION_KEY);
             server.put(ENCRYPTION_KEY, encryptionKey);
@@ -231,7 +167,7 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
     }
 
     public void onTaskComplete() {
-        logger.debug("Task Complete");
+        logger.debug("Completed the task for server {}", server.get(DISPLAY_NAME));
         metricWriteHelper.printMetric(metricPrefix + METRICS_SEPARATOR + HEARTBEAT, String.valueOf(heartBeatValue), "AVERAGE", "AVERAGE", "INDIVIDUAL");
 
     }

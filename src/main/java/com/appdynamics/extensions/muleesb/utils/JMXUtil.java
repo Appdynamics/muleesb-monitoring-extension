@@ -1,58 +1,45 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
- * All Rights Reserved.
- * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
- * The copyright notice above does not evidence any actual or intended publication of such source code.
+ *   Copyright 2019 . AppDynamics LLC and its affiliates.
+ *   All Rights Reserved.
+ *   This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
+ *   The copyright notice above does not evidence any actual or intended publication of such source code.
+ *
  */
+
 package com.appdynamics.extensions.muleesb.utils;
 
-import com.google.common.base.Strings;
-import org.apache.commons.lang.text.StrSubstitutor;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
+import com.appdynamics.extensions.muleesb.config.Stat;
+import com.appdynamics.extensions.muleesb.config.Stats;
+import static com.appdynamics.extensions.muleesb.utils.Constants.METRICS_SEPARATOR;
 
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectInstance;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
+/**
+ * Created by Prashant Mehta on 2/26/18.
+ */
 public class JMXUtil {
 
-    private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://${HOST}:${PORT}/jmxrmi";
-
-    public static JMXConnector getJmxConnector(String host, int port, String username, String password) throws IOException {
-        return connect(host, port, username, password);
+    public static boolean isCompositeObject(String objectName) {
+        return (objectName.indexOf('.') != -1);
     }
 
-    private static JMXConnector connect(String host, int port, String username, String password) throws IOException {
-        String jmxUrl = buildUrl(host, port);
-        JMXServiceURL url = new JMXServiceURL(jmxUrl);
-        final Map<String, Object> env = new HashMap<String, Object>();
-        JMXConnector connector;
-        if (!Strings.isNullOrEmpty(username)) {
-            env.put(JMXConnector.CREDENTIALS, new String[]{username, password});
-            connector = JMXConnectorFactory.connect(url, env);
-        } else {
-            connector = JMXConnectorFactory.connect(url);
+    public static String getMetricNameFromCompositeObject(String objectName) {
+        return objectName.split("\\.")[0];
+    }
+
+    public static Stat getAptMetricConfigAttr(MonitorContextConfiguration configuration, String metricType) {
+        Stats stats = (Stats) configuration.getMetricsXml();
+        for (Stat stat : stats.getStat()) {
+            if (stat.getName().equals(metricType))
+                return stat;
         }
-        return connector;
+        return null;
     }
 
-    private static String buildUrl(String host, int port) {
-        Map<String, String> valueMap = new HashMap<String, String>();
-        valueMap.put("HOST", host);
-        valueMap.put("PORT", String.valueOf(port));
-        StrSubstitutor strSubstitutor = new StrSubstitutor(valueMap);
-        return strSubstitutor.replace(JMX_URL);
-    }
-
-    public static Set<ObjectInstance> queryMbeans(MBeanServerConnection connection, String mbeanMatcher) throws IOException, MalformedObjectNameException {
-        Set<ObjectInstance> mBeans = connection.queryMBeans(new ObjectName(mbeanMatcher), null);
-        return mBeans;
+    public static String getMetricsSuffixKey(ObjectName objectName, String flowPath) {
+        StringBuilder metricsKey = new StringBuilder();
+        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR).append(flowPath).append(METRICS_SEPARATOR);
+        return metricsKey.toString();
     }
 }

@@ -12,6 +12,7 @@ public class MuleESBMonitorTest {
         MuleESBMonitor monitor = new MuleESBMonitor();
         Map<String, String> taskArgs = Maps.newHashMap();
         taskArgs.put("config-file", "src/test/resources/conf/config.yml");
+        taskArgs.put("metric-file", "src/test/resources/conf/metrics.xml");
         monitor.execute(taskArgs, null);
     }
 }

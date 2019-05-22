@@ -10,37 +10,35 @@ package com.appdynamics.extensions.muleesb;
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.TasksExecutionServiceProvider;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
-import com.appdynamics.extensions.muleesb.utils.Constant;
+import com.appdynamics.extensions.muleesb.config.Stats;
+import com.appdynamics.extensions.muleesb.utils.Constants;
 import com.appdynamics.extensions.util.AssertUtils;
-import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MuleESBMonitor extends ABaseMonitor {
     private static final Logger logger = ExtensionsLoggerFactory.getLogger(MuleESBMonitor.class);
 
-    private static final String CONFIG_ARG = "config-file";
-
     protected String getDefaultMetricPrefix() {
-        return Constant.METRIC_PREFIX;
+        return Constants.METRIC_PREFIX;
     }
 
     public String getMonitorName() {
-        return Constant.MonitorName;
+        return Constants.MonitorName;
     }
 
     protected void doRun(TasksExecutionServiceProvider tasksExecutionServiceProvider) {
         try {
             List<Map<String, ?>> muleServers = getServers();
+            AssertUtils.assertNotNull(this.getContextConfiguration().getMetricsXml(), "Metrics xml not available");
             for (Map<String, ?> server : muleServers) {
                 AssertUtils.assertNotNull(server, "the server arguments are empty");
-                AssertUtils.assertNotNull(server.get(Constant.DISPLAY_NAME), "The displayName can not be null");
-                logger.info("Starting the Mule ESB Monitoring Task for server : " + server.get(Constant.DISPLAY_NAME));
+                AssertUtils.assertNotNull(server.get(Constants.DISPLAY_NAME), "The displayName can not be null");
+                logger.info("Starting the Mule ESB Monitoring Task for server : " + server.get(Constants.DISPLAY_NAME));
                 MuleESBMonitorTask task = new MuleESBMonitorTask(getContextConfiguration(), tasksExecutionServiceProvider.getMetricWriteHelper(), server);
-                tasksExecutionServiceProvider.submit((String) server.get(Constant.DISPLAY_NAME), task);
+                tasksExecutionServiceProvider.submit((String) server.get(Constants.DISPLAY_NAME), task);
             }
         } catch (Exception e) {
             logger.error("Mule Esb servers Metrics collection failed", e);
@@ -49,17 +47,23 @@ public class MuleESBMonitor extends ABaseMonitor {
     }
 
     protected List<Map<String, ?>> getServers() {
-        List<Map<String, ?>> servers = (List<Map<String, ?>>) getContextConfiguration().getConfigYml().get(Constant.SERVERS);
+        List<Map<String, ?>> servers = (List<Map<String, ?>>) getContextConfiguration().getConfigYml().get(Constants.SERVERS);
         AssertUtils.assertNotNull(servers, "The 'servers' section in conf.yml is not initialised");
         return servers;
     }
 
-    public static void main(String[] args) throws TaskExecutionException {
-
-        Map<String, String> taskArgs = new HashMap<String, String>();
-        taskArgs.put(CONFIG_ARG, "src/main/resources/conf/config.yml");
-
-        MuleESBMonitor muleesbMonitor = new MuleESBMonitor();
-        muleesbMonitor.execute(taskArgs, null);
+    protected void initializeMoreStuff(Map<String, String> args) {
+        logger.info("initializing metric.xml file");
+        this.getContextConfiguration().setMetricXml(args.get("metric-file"), Stats.class);
     }
+
+//    public static void main(String[] args) throws TaskExecutionException {
+//
+//        Map<String, String> taskArgs = new HashMap<String, String>();
+//        taskArgs.put(CONFIG_ARG, "src/main/resources/conf/config.yml");
+//        taskArgs.put(METRIC_ARG, "src/main/resources/conf/metrics.xml");
+//
+//        MuleESBMonitor muleesbMonitor = new MuleESBMonitor();
+//        muleesbMonitor.execute(taskArgs, null);
+//    }
 }

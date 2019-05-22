@@ -21,6 +21,7 @@
                 <task-arguments>
                     <!-- conf file-->
                     <argument name="config-file" is-required="true" default-value="monitors/MuleESBMonitor/config.yml" />
+                    <argument name="metric-file" is-required="true" default-value="monitors/MuleESBMonitor/metrics.xml" />
                 </task-arguments>
                 <java-task>
                         <classpath>muleesb-monitoring-extension.jar</classpath>

@@ -1,8 +1,15 @@
+# Use this only if SIM is enabled
+#metricPrefix: Custom Metrics|Mule ESB|
 
-metricPrefix:  "Custom Metrics|Mule ESB|"
+# If SIM is not enabled, then use this
+metricPrefix: Server|Component:<COMPONENT_ID>|Custom Metrics|Mule ESB|
+#To find the <COMPONENT_ID> in your environment,
+#please follow the screenshot https://docs.appdynamics.com/display/PRO42/Build+a+Monitoring+Extension+Using+Java
+
 # Mule ESB instance particulars
 servers:
    - displayName: "Mule Server" # mandatory
+     serviceUrl: ""
      host: localhost
      port: 1098
      username: ""
@@ -10,33 +17,11 @@ servers:
      # Mule ESB MBeans
      mbeanDetails:
         domainMatcher: "Mule.*"
-        types: ["org.mule.Statistics"]
+        types: [org.mule.Statistics]
         excludeDomains: []
-        flows: []
-
-#                                      List of metrics
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#Glossary of terms(These terms are used as properties for each metric):
-#   alias
-#   aggregationType
-#   timeRollUpType
-#   clusterRollUpType                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
-#   multiplier -->not for derived metrics
-#   convert --> not for derived metrics
-#   delta --> not for derived metrics
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-metrics:
-    memory:
-      - FreeMemory:
-          alias: "FreeMemory"
-      - MaxMemory:
-          alias: "MaxMemory"
-      - TotalMemory:
-          alias: "TotalMemory"
+        flows: [.*]
 
 
-#TODO: use specific new Metric as the replacer needs to be implemented
-# Note: If the current "metricPathReplacements" is not working on your current machine,
 # please add escape charaters "\\" before your value. It changes from OS to OS, some need it, some don't
 # For Example, replace: "%" -> Becomes -> replace: "\\%"
 metricPathReplacements:
@@ -46,8 +31,8 @@ metricPathReplacements:
      replaceWith: "|"
 
 
-# Each server instance needs 3 threads to call the mule ESB.
-# So, please change the value accordingly(Based on the number of server instances you are monitoring).
-numberOfThreads: 6
+# Each server instance needs 1 threads to call the mule ESB.
+ # By default we want to support 3 servers, so it is 3 threads.
+numberOfThreads: 3
 
 
