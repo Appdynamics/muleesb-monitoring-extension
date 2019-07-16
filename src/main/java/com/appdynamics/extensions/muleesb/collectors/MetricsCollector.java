@@ -54,24 +54,29 @@ public class MetricsCollector {
             logger.debug(objectName + " and processing for domain => " + domain);
 
             if (!isDomainExcluded(objectName, excludeDomains)) {
-                try {
-                    String objectNameSuffix = objectName.toString().split(",")[1];
+                try {//  - ObjectInstance: Mule.test-management-api-1:type=org.mule.Statistics,Flow="get:/apistatus:test"
+//
                     Boolean isFlow = false;
                     String flow = "";
-                    if (objectNameSuffix.contains("Flow")) {
+                    if (objectName.toString().contains("Flow")) {
                         isFlow = true;
-                        flow = objectNameSuffix.split("=")[1];
+                        String[] objectNameSubStrings = objectName.toString().split(",");
+                        //Looping over all the substring to find Flow and process.
+                        for (String objectNameSubString : objectNameSubStrings)
+                            if (objectNameSubString.contains("Flow"))
+                                flow = objectNameSubString.split("=")[1];
                     }
-                    if ((isFlow && isFlowIncluded(flows, flow)) || (!objectNameSuffix.equals("") && !isFlow)) {
+
+                    if ((isFlow && isFlowIncluded(flows, flow)) ||  !isFlow) {
                         try {
-                            InstanceProcessor instanceProcessor = new InstanceProcessor(jmxConnectionAdapter, jmxConnector, JMXUtil.getAptMetricConfigAttr(configuration, EVENT_METRICS).getMetricConfig(), metricPrefix + JMXUtil.getMetricsSuffixKey(objectName, objectNameSuffix));
+                            InstanceProcessor instanceProcessor = new InstanceProcessor(jmxConnectionAdapter, jmxConnector, JMXUtil.getAptMetricConfigAttr(configuration, EVENT_METRICS).getMetricConfig(), metricPrefix + JMXUtil.getMetricsSuffixKey(objectName, flow));
                             logger.debug("collecting metrics for domain: " + domain);
                             metrics.addAll(instanceProcessor.processInstance(instance));
                         } catch (Exception e) {
                             logger.error("Failed to collect attributes for the flow : " + flow, e);
                         }
                     } else {
-                        logger.info("Flow not found: " + flow + "metric path String " + objectNameSuffix);
+                        logger.info("Flow not found: " + flow + "metric path String " + flow);
                     }
                 } catch (Exception e) {
                     logger.error("Unable to get info for object " + instance.getObjectName(), e);

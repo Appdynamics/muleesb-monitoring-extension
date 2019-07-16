@@ -9,7 +9,9 @@ metricPrefix: Server|Component:<COMPONENT_ID>|Custom Metrics|Mule ESB|
 # Mule ESB instance particulars
 servers:
    - displayName: "Mule Server" # mandatory
-     serviceUrl: ""
+   #     You can either use just a host and port to connect or use your full serviceURL to make the connection
+   #     Do not choose both, comment one out and only use the other.
+   #  serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi"
      host: localhost
      port: 1098
      username: ""

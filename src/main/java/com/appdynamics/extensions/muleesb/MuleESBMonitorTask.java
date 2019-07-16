@@ -61,11 +61,11 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
     public void run() {
         try {
             getJMXConnectionAdapter();
-            populateStats();
-            heartBeatValue = BigInteger.ONE;
-            logger.info("Completed the Mule esb Monitoring task for {}", server.get(DISPLAY_NAME));
-        } catch (NumberFormatException e) {
-            logger.error("Number format exception while creating JMX connection to server {}", server.get(DISPLAY_NAME), e);
+            if (jmxConnectionAdapter != null) {
+                populateStats();
+                heartBeatValue = BigInteger.ONE;
+                logger.info("Completed the Mule esb Monitoring task for {}", server.get(DISPLAY_NAME));
+            }
         } catch (Exception e) {
             logger.error("Error while running the task " + server.get("displayName") + e);
         }
@@ -135,28 +135,39 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         return sb.toString();
     }
 
-    private void getJMXConnectionAdapter() throws NumberFormatException {
-
+    private void getJMXConnectionAdapter() {
         String serviceUrl = (String) server.get(Constants.SERVICE_URL);
-        String host = (String) server.get(com.appdynamics.extensions.Constants.HOST);
-
-        if (Strings.isNullOrEmpty(serviceUrl) && Strings.isNullOrEmpty(host)) {
-            logger.info("JMX details not provided, not creating connection");
-        }
+        String username = (String) server.get(USERNAME);
+        String password = getPassword(server);
+        String host = null;
         try {
-            String portStr = server.get(com.appdynamics.extensions.Constants.PORT).toString();
-            int port = portStr != null ? Integer.parseInt(portStr) : -1;
-            String username = (String) server.get(USERNAME);
-            String password = getPassword(server);
+            if (!Strings.isNullOrEmpty(serviceUrl)) {
+                jmxConnectionAdapter = new JMXConnectionAdapter(serviceUrl, username, password);
+            } else if (!Strings.isNullOrEmpty(host)) {
+                host = (String) server.get(com.appdynamics.extensions.Constants.HOST);
+                String portStr = server.get(com.appdynamics.extensions.Constants.PORT).toString();
+                int port = checkPortValidity(portStr);
+                jmxConnectionAdapter = new JMXConnectionAdapter(host, port, username, password);
+            } else
+                logger.info("JMX details not provided, not creating connection");
 
-            jmxConnectionAdapter = JMXConnectionAdapter.create(serviceUrl, host, port, username, password);
-        } catch (MalformedURLException e) {
-            logger.error("Malformed Error while creating Jmx connection Adapter", e);
+        } catch (MalformedURLException me) {
+            logger.error("Malformed Error while creating Jmx connection Adapter:", me);
+        } catch (IllegalArgumentException ie) {
+            logger.error("Illegal port argument sent:", ie);
         } catch (Exception e) {
-            logger.error("Error while creating Jmx connection Adapter", e);
+            logger.error("Error while creating Jmx connection Adapter:", e);
         }
+        if(jmxConnectionAdapter == null)
+            logger.info("JMX connection could not be established");
     }
 
+    private int checkPortValidity(String portStr) throws IllegalArgumentException {
+        int port = portStr != null ? Integer.parseInt(portStr) : -1;
+        if (port < 0 || port > 0xFFFF) // Valid ports: 1 ==> 65535
+            throw new IllegalArgumentException("port out of range:" + port);
+        return port;
+    }
 
     private String getPassword(Map server) {
         if (configuration.getConfigYml().get(ENCRYPTION_KEY) != null) {

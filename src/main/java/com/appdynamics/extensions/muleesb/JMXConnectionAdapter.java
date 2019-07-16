@@ -37,32 +37,22 @@ public class JMXConnectionAdapter {
     private final String username;
     private final String password;
 
-    private JMXConnectionAdapter(String host, int port, String username, String password) throws MalformedURLException {
+    public JMXConnectionAdapter(String host, int port, String username, String password) throws MalformedURLException {
         this.serviceUrl = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
         this.username = username;
         this.password = password;
     }
 
-    private JMXConnectionAdapter(String serviceUrl, String username, String password) throws MalformedURLException {
+    public JMXConnectionAdapter(String serviceUrl, String username, String password) throws MalformedURLException {
         this.serviceUrl = new JMXServiceURL(serviceUrl);
         this.username = username;
         this.password = password;
     }
 
 
-    public static JMXConnectionAdapter create(String serviceUrl, String host, int port, String username, String password) throws MalformedURLException {
-        if (Strings.isNullOrEmpty(serviceUrl) && !Strings.isNullOrEmpty(host) && port != -1) {
-            return new JMXConnectionAdapter(host, port, username, password);
-        } else if (!Strings.isNullOrEmpty(serviceUrl)) {
-            return new JMXConnectionAdapter(serviceUrl, username, password);
-        } else {
-            throw new IllegalArgumentException("Configuration for serviceUrl or host/port not found");
-        }
-    }
-
     public JMXConnector open() throws IOException {
         JMXConnector jmxConnector;
-        final Map<String, Object> env = new HashMap<String, Object>();
+        final Map<String, Object> env = new HashMap<>();
         if (!Strings.isNullOrEmpty(username)) {
             env.put(JMXConnector.CREDENTIALS, new String[]{username, password});
             jmxConnector = JMXConnectorFactory.connect(serviceUrl, env);

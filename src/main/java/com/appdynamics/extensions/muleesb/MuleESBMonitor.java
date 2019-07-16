@@ -34,7 +34,7 @@ public class MuleESBMonitor extends ABaseMonitor {
             List<Map<String, ?>> muleServers = getServers();
             AssertUtils.assertNotNull(this.getContextConfiguration().getMetricsXml(), "Metrics xml not available");
             for (Map<String, ?> server : muleServers) {
-                AssertUtils.assertNotNull(server, "the server arguments are empty");
+                AssertUtils.assertNotNull(server, "The server arguments are empty");
                 AssertUtils.assertNotNull(server.get(Constants.DISPLAY_NAME), "The displayName can not be null");
                 logger.info("Starting the Mule ESB Monitoring Task for server : " + server.get(Constants.DISPLAY_NAME));
                 MuleESBMonitorTask task = new MuleESBMonitorTask(getContextConfiguration(), tasksExecutionServiceProvider.getMetricWriteHelper(), server);
