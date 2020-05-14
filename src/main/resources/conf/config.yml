@@ -11,9 +11,9 @@ servers:
    - displayName: "Mule Server" # mandatory
       #     You can either use just a host and port to connect or use your full serviceURL to make the connection
       #     Do not choose both, comment one out and only use the other.
-#     serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi"
+#     serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:9000/jmxrmi"
      host: localhost
-     port: 1098
+     port: 9000
      username: ""
      password: ""
      # Mule ESB MBeans

@@ -11,12 +11,13 @@ To use this extension please configure JMX in Mule ESB instance. To configure JM
 
  ```
      ###JMX Connection Properties###
-     wrapper.java.additional.5=-Dcom.sun.management.jmxremote
-     wrapper.java.additional.6=-Dcom.sun.management.jmxremote.port=9000
-     wrapper.java.additional.7=-Dcom.sun.management.jmxremote.authenticate=false
-     wrapper.java.additional.8=-Dcom.sun.management.jmxremote.ssl=false
-     wrapper.java.additional.9=-Djava.rmi.server.hostname=localhost
+     wrapper.java.additional.19=-Dcom.sun.management.jmxremote
+     wrapper.java.additional.20=-Dcom.sun.management.jmxremote.port=9000
+     wrapper.java.additional.21=-Dcom.sun.management.jmxremote.authenticate=false
+     wrapper.java.additional.22=-Dcom.sun.management.jmxremote.ssl=false
+     wrapper.java.additional.23=-Djava.rmi.server.hostname=localhost
  ```
+ Please make sure that you put proper value of `n` in `wrapper.java.additional.<n>` as per your conf file.
  In order to use this extension, you do need a [Standalone JAVA Machine Agent](https://docs.appdynamics.com/display/PRO44/Standalone+Machine+Agents) or [SIM Agent](https://docs.appdynamics.com/display/PRO44/Server+Visibility).  For more details on downloading these products, please  visit [here](https://download.appdynamics.com/).
  The extension needs to be able to connect to the Mule ESB in order to collect and send metrics. To do this, you will have to either establish a remote connection in between the extension and the product, or have an agent on the same machine running the product in order for the extension to collect and send the metrics.
 
@@ -50,10 +51,10 @@ Configure the Mule ESB Extension by editing the config.yml file in `<MACHINE_AGE
           # You can either use just a host and port to connect or use your full serviceURL to make the connection
           # Do not choose both, comment one out and only use the other.
           # Below is a sample serviceUrl for a server.
-          #  serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi"
+          #  serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:9000/jmxrmi"
           #  serviceUrl: ""
          host: localhost
-         port: 1098
+         port: 9000
          username: ""
          password: ""
          # Mule ESB MBeans
@@ -85,7 +86,7 @@ Configure the Mule ESB Extension by editing the config.yml file in `<MACHINE_AGE
 
 
 ### Metrics.xml
-You can add/remove metrics of your choice by modifying the provided metrics.xml file. This file consists of all the metrics that will be monitored and sent to the controller. Please look how the metrics have been defined and follow the same convention, when adding new metrics. You do have the ability to chosoe your Rollup types as well as set an alias that you would like to be displayed on the metric browser.
+You can add/remove metrics of your choice by modifying the provided metrics.xml file. This file consists of all the metrics that will be monitored and sent to the controller. Please look how the metrics have been defined and follow the same convention, when adding new metrics. You do have the ability to choose your Rollup types as well as set an alias that you would like to be displayed on the metric browser.
 
  #### Metric Configuration
     Add the `metric` to be monitored with the metric tag as shown below. Also please note that the `metrics` are grouped under appropriate stats in the metrics.xml.

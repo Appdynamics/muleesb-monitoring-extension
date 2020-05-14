@@ -9,11 +9,11 @@ metricPrefix: Server|Component:<COMPONENT_ID>|Custom Metrics|Mule ESB|
 # Mule ESB instance particulars
 servers:
    - displayName: "Mule Server" # mandatory
-   #     You can either use just a host and port to connect or use your full serviceURL to make the connection
-   #     Do not choose both, comment one out and only use the other.
-   #  serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi"
+      #     You can either use just a host and port to connect or use your full serviceURL to make the connection
+      #     Do not choose both, comment one out and only use the other.
+#     serviceUrl: ""         #e.g: "service:jmx:rmi:///jndi/rmi://localhost:9000/jmxrmi"
      host: localhost
-     port: 1098
+     port: 9000
      username: ""
      password: ""
      # Mule ESB MBeans
@@ -37,4 +37,22 @@ metricPathReplacements:
  # By default we want to support 3 servers, so it is 3 threads.
 numberOfThreads: 3
 
+controllerInfo:
+  controllerHost: ""
+  controllerPort: 8080
+  account: "customer1"
+  username: "user1"
+  password: "welcome"
+  encryptedPassword: ""
+  encryptionKey: ""
+  controllerSslEnabled: false
+  enableOrchestration: false
+  uniqueHostId: ""
+  accountAccessKey: ""
+  machinePath: ""
+  simEnabled: true
+  applicationName: ""
+  tierName: ""
+  nodeName: ""
 
+encryptionKey: ""
