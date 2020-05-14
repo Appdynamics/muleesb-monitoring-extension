@@ -12,6 +12,7 @@ import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.muleesb.config.Stat;
 import com.appdynamics.extensions.muleesb.config.Stats;
 import static com.appdynamics.extensions.muleesb.utils.Constants.METRICS_SEPARATOR;
+import com.appdynamics.extensions.util.StringUtils;
 
 import javax.management.ObjectName;
 
@@ -39,7 +40,9 @@ public class JMXUtil {
 
     public static String getMetricsSuffixKey(ObjectName objectName, String flowPath) {
         StringBuilder metricsKey = new StringBuilder();
-        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR).append(flowPath).append(METRICS_SEPARATOR);
+        metricsKey.append(objectName.getDomain()).append(METRICS_SEPARATOR);
+        if (StringUtils.hasText(flowPath))
+            metricsKey.append(flowPath).append(METRICS_SEPARATOR);
         return metricsKey.toString();
     }
 }

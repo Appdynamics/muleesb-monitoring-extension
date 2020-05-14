@@ -42,7 +42,7 @@ public class AttributeProcessor {
             MetricConfig config = mbeanMetricsWithConfig.get(attrName);
             return new Metric(attrName, String.valueOf(value), metricPath + config.getAlias(), objectMapper.convertValue(config, Map.class));
         } else {
-            logger.warn("Ignoring metric {} with path {} as the value is null", attrName, metricPath);
+            logger.debug("Ignoring metric {} with path {} as the value is null", attrName, metricPath);
         }
         return null;
     }
