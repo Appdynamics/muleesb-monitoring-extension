@@ -165,8 +165,8 @@ Always feel free to fork and contribute any changes directly here on [GitHub](ht
 ## Version
 |          Name            |  Version   |
 |--------------------------|------------|
-|Extension Version         |2.0.0       |
+|Extension Version         |2.2.0       |
 |Controller Compatibility  |3.7 or Later|
 |Product Tested On         |3.9.2       |
-|Last Update               |24/07/2019  |
+|Last Update               |13/05/2020  |
 |Changes list              |[ChangeLog](https://github.com/Appdynamics/muleesb-monitoring-extension/blob/master/CHANGELOG.md)|

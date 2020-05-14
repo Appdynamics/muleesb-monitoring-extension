@@ -1,5 +1,5 @@
 package com.appdynamics.extensions.muleesb.collectors;/*
- * Copyright 2019. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -9,8 +9,8 @@ import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.muleesb.config.MetricConfig;
 import static com.appdynamics.extensions.muleesb.utils.Constants.PERIOD;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 
 import javax.management.Attribute;

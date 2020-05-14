@@ -1,7 +1,7 @@
 package com.appdynamics.extensions.muleesb.collectors;
 
 /*
- * Copyright 2019. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -11,7 +11,6 @@ import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.muleesb.JMXConnectionAdapter;
-import com.appdynamics.extensions.muleesb.MuleESBMonitorTask;
 import com.appdynamics.extensions.muleesb.config.Stat;
 import com.appdynamics.extensions.muleesb.utils.Constants;
 import static com.appdynamics.extensions.muleesb.utils.Constants.EVENT_METRICS;
@@ -29,7 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class MetricsCollector {
-    private static final Logger logger = ExtensionsLoggerFactory.getLogger(MuleESBMonitorTask.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(MetricsCollector.class);
 
     private MonitorContextConfiguration configuration;
     private JMXConnectionAdapter jmxConnectionAdapter;

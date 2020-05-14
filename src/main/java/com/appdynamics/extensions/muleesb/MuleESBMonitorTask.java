@@ -139,12 +139,12 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         String serviceUrl = (String) server.get(Constants.SERVICE_URL);
         String username = (String) server.get(USERNAME);
         String password = getPassword(server);
-        String host = null;
+        String host = (String) server.get(com.appdynamics.extensions.Constants.HOST);
         try {
             if (!Strings.isNullOrEmpty(serviceUrl)) {
                 jmxConnectionAdapter = new JMXConnectionAdapter(serviceUrl, username, password);
             } else if (!Strings.isNullOrEmpty(host)) {
-                host = (String) server.get(com.appdynamics.extensions.Constants.HOST);
+
                 String portStr = server.get(com.appdynamics.extensions.Constants.PORT).toString();
                 int port = checkPortValidity(portStr);
                 jmxConnectionAdapter = new JMXConnectionAdapter(host, port, username, password);

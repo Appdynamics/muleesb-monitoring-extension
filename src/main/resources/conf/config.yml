@@ -37,4 +37,22 @@ metricPathReplacements:
  # By default we want to support 3 servers, so it is 3 threads.
 numberOfThreads: 3
 
+controllerInfo:
+  controllerHost: ""
+  controllerPort: 8080
+  account: "customer1"
+  username: "user1"
+  password: "welcome"
+  encryptedPassword: ""
+  encryptionKey: ""
+  controllerSslEnabled: false
+  enableOrchestration: false
+  uniqueHostId: ""
+  accountAccessKey: ""
+  machinePath: ""
+  simEnabled: true
+  applicationName: ""
+  tierName: ""
+  nodeName: ""
 
+encryptionKey: ""
