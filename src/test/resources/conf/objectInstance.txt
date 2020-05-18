@@ -1,0 +1,3 @@
+"Custom Metrics|Mule ESB|Mule Server|TotalMemory","1020067840"
+"Custom Metrics|Mule ESB|Mule Server|FreeMemory","749746472"
+"Custom Metrics|Mule ESB|Mule Server|MaxMemory","1020067840"

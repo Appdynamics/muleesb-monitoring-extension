@@ -1,0 +1,40 @@
+ObjectInstances:
+  - ObjectInstance: Mule.test-management-api-1:type=org.mule.Statistics,Flow="get:/apistatus:test"
+    domain: Mule.test-management-api-1
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9
+  - ObjectInstance: Mule.create-audit-api-1.2.9:type=org.mule.Statistics,Application="application totals"
+    domain: Mule.create-appd-api-1.2.9
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9
+  - ObjectInstance: Mule.appd-api-1.2.11:type=org.mule.Statistics,Flow="ui-appd-new"
+    domain: Mule.ui-appd-1.13
+    attributes:
+      SyncEventsReceived: 0
+      AsyncEventsReceived: 1
+      TotalEventsReceived: 2
+      ExecutionErrors: 3
+      FatalErrors: 4
+      ProcessedEvents: 5
+      MinProcessingTime: 6
+      MaxProcessingTime: 7
+      AverageProcessingTime: 8
+      TotalProcessingTime: 9
