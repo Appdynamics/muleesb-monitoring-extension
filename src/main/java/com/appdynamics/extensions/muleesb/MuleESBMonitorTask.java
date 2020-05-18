@@ -170,7 +170,8 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
     }
 
     private String getPassword(Map server) {
-        if (configuration.getConfigYml().get(ENCRYPTION_KEY) != null) {
+        String encryptedPassword =  (String)server.get(Constants.ENCRYPTED_PASSWORD);
+        if (!Strings.isNullOrEmpty(encryptedPassword)) {
             String encryptionKey = (String) configuration.getConfigYml().get(ENCRYPTION_KEY);
             server.put(ENCRYPTION_KEY, encryptionKey);
         }

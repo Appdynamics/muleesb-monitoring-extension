@@ -8,6 +8,7 @@ public class Constants {
     public static final String USERNAME = "username";
 
     public static final String ENCRYPTION_KEY = "encryptionKey";
+    public static final String ENCRYPTED_PASSWORD = "encryptedPassword";
     public static final String METRICS_COLLECTED = "Metrics Collected";
     public static final String ERROR_VALUE = "0";
     public static final String MBEAN_DETAILS = "mbeanDetails";

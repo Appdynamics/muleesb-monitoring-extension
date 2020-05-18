@@ -15,7 +15,8 @@ servers:
      host: localhost
      port: 9000
      username: ""
-     password: ""
+     password: ""  #if encryptedPassword is being used, put password as empty.
+#     encryptedPassword: ""  #Needs to be used in conjunction with `encryptionKey`. Please read the extension documentation to generate encrypted password. https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-use-Password-Encryption-with-Extensions/ta-p/29397
      # Mule ESB MBeans
      mbeanDetails:
         domainMatcher: "Mule.*"
@@ -55,4 +56,4 @@ controllerInfo:
   tierName: ""
   nodeName: ""
 
-encryptionKey: ""
+encryptionKey: "abcd"
