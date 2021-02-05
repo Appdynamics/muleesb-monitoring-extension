@@ -1,8 +1,8 @@
 # Use this only if SIM is enabled
-#metricPrefix: Custom Metrics|Mule ESB|
+#metricPrefix: "Custom Metrics|Mule ESB|"
 
 # If SIM is not enabled, then use this
-metricPrefix: Server|Component:<COMPONENT_ID>|Custom Metrics|Mule ESB|
+metricPrefix: "Server|Component:<COMPONENT_ID>|Custom Metrics|Mule ESB|"
 #To find the <COMPONENT_ID> in your environment,
 #please follow the screenshot https://docs.appdynamics.com/display/PRO42/Build+a+Monitoring+Extension+Using+Java
 
@@ -45,7 +45,6 @@ controllerInfo:
   username: "user1"
   password: "welcome"
   encryptedPassword: ""
-  encryptionKey: ""
   controllerSslEnabled: false
   enableOrchestration: false
   uniqueHostId: ""

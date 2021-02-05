@@ -166,8 +166,9 @@ Always feel free to fork and contribute any changes directly here on [GitHub](ht
 ## Version
 |          Name            |  Version   |
 |--------------------------|------------|
-|Extension Version         |2.2.0       |
-|Controller Compatibility  |3.7 or Later|
+|Extension Version         |2.2.1       |
+|Controller Compatibility  |4.5 or Later|
+|Agent Compatibility  |4.5.13 or Later|
 |Product Tested On         |3.9.2       |
-|Last Update               |13/05/2020  |
+|Last Update               |04/02/2021  |
 |Changes list              |[ChangeLog](https://github.com/Appdynamics/muleesb-monitoring-extension/blob/master/CHANGELOG.md)|

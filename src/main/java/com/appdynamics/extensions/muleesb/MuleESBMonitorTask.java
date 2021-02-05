@@ -63,7 +63,6 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
             getJMXConnectionAdapter();
             if (jmxConnectionAdapter != null) {
                 populateStats();
-                heartBeatValue = BigInteger.ONE;
                 logger.info("Completed the Mule esb Monitoring task for {}", server.get(DISPLAY_NAME));
             }
         } catch (Exception e) {
@@ -76,8 +75,12 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
         List<Metric> metrics = Lists.newArrayList();
         try {
             try {
-                if (jmxConnectionAdapter != null)
+                if (jmxConnectionAdapter != null) {
                     jmxConnector = jmxConnectionAdapter.open();
+                    if (jmxConnector != null){
+                        heartBeatValue = BigInteger.ONE;
+                    }
+                }
             } catch (IOException e) {
                 logger.error("Error JMX-ing into Mule ESB Server ", e);
                 metrics.add(new Metric(Constants.METRICS_COLLECTED, Constants.ERROR_VALUE, metricPrefix + Constants.METRICS_COLLECTED));
@@ -180,7 +183,7 @@ public class MuleESBMonitorTask implements AMonitorTaskRunnable {
 
     public void onTaskComplete() {
         logger.debug("Completed the task for server {}", server.get(DISPLAY_NAME));
-        metricWriteHelper.printMetric(metricPrefix + METRICS_SEPARATOR + HEARTBEAT, String.valueOf(heartBeatValue), "AVERAGE", "AVERAGE", "INDIVIDUAL");
+        metricWriteHelper.printMetric(metricPrefix + HEARTBEAT, String.valueOf(heartBeatValue), "AVERAGE", "AVERAGE", "INDIVIDUAL");
 
     }
 }
