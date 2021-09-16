@@ -6,8 +6,9 @@ Mule ESB is a lightweight Java-based enterprise service bus (ESB) and integratio
 
 ## Prerequisites
 
-Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met.
-To use this extension please configure JMX in Mule ESB instance. To configure JMX please add following properties to the wrapper.conf of the Mule instance.
+1. Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met.
+
+2. To use this extension please configure JMX in Mule ESB instance. To configure JMX please add following properties to the wrapper.conf of the Mule instance.
 
  ```
      ###JMX Connection Properties###
@@ -17,20 +18,19 @@ To use this extension please configure JMX in Mule ESB instance. To configure JM
      wrapper.java.additional.22=-Dcom.sun.management.jmxremote.ssl=false
      wrapper.java.additional.23=-Djava.rmi.server.hostname=localhost
  ```
- Please make sure that you put proper value of `n` in `wrapper.java.additional.<n>` as per your conf file.
- In order to use this extension, you do need a [Standalone JAVA Machine Agent](https://docs.appdynamics.com/display/PRO44/Standalone+Machine+Agents) or [SIM Agent](https://docs.appdynamics.com/display/PRO44/Server+Visibility).  For more details on downloading these products, please  visit [here](https://download.appdynamics.com/).
- The extension needs to be able to connect to the Mule ESB in order to collect and send metrics. To do this, you will have to either establish a remote connection in between the extension and the product, or have an agent on the same machine running the product in order for the extension to collect and send the metrics.
+ Please make sure that you put proper value of `n` in `wrapper.java.additional.<n>` as per your conf file.<br/>
+
+3. The extension needs to be able to connect to the Mule ESB in order to collect and send metrics. To do this, you will have to either establish a remote connection in between the extension and the product, or have an agent on the same machine running the product in order for the extension to collect and send the metrics.
 
 ## Installation
 
-1. Download and unzip the MuleESBMonitor-2.0.0.zip to the "<MachineAgent_Dir>/monitors" directory.
+1. Run 'mvn clean install' from "MuleESBMonitorRepo"
+2. Unzip the MuleESBMonitor-VERSION.zip from `target` directory into the "<MachineAgent_Dir>/monitors" directory.
 2. Edit the file config.yml located at <MachineAgent_Dir>/monitors/MuleESBMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
 3. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
 4. Restart the Machine Agent.
 
 Please place the extension in the **"monitors"** directory of your **Machine Agent** installation directory. Do not place the extension in the **"extensions"** directory of your **Machine Agent** installation directory.
-In the AppDynamics Metric Browser, look for **Application Infrastructure Performance|\<Tier\>|Custom Metrics|Mule ESB** and you should be able to see all the metrics.
-
 
 ## Configuration
 ### Config.yml
@@ -41,6 +41,8 @@ Configure the Mule ESB Extension by editing the config.yml file in `<MACHINE_AGE
        ```
        metricPrefix: "Server|Component:100|Custom Metrics|Mule ESB|"
        ```
+  More details around metric prefix can be found [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695). 
+  
   2. Specify the Mule ESB instance host, JMX port, username and password in the config.yml. By default the extension will fetch metrics from org.mule.Statistics type for all the domains under Mule. You can also configure any custom domainMatcher(regex supported) in the config.yml. It also fetches memory metrics of the Mule instance.
 
   3. We can exclude domains by specifying them in the `excludeDomains` configuration. Similary, you can add flows to be monitored in the `flows`.
@@ -88,8 +90,8 @@ Configure the Mule ESB Extension by editing the config.yml file in `<MACHINE_AGE
 ### Metrics.xml
 You can add/remove metrics of your choice by modifying the provided metrics.xml file. This file consists of all the metrics that will be monitored and sent to the controller. Please look how the metrics have been defined and follow the same convention, when adding new metrics. You do have the ability to choose your Rollup types as well as set an alias that you would like to be displayed on the metric browser.
 
- #### Metric Configuration
-    Add the `metric` to be monitored with the metric tag as shown below. Also please note that the `metrics` are grouped under appropriate stats in the metrics.xml.
+#### Metric Configuration
+Add the `metric` to be monitored with the metric tag as shown below. Also please note that the `metrics` are grouped under appropriate stats in the metrics.xml.
 ```
 <metric attr="AverageProcessingTime" alias="AverageProcessingTime" aggregationType = "OBSERVATION" timeRollUpType = "AVERAGE" clusterRollUpType = "INDIVIDUAL" />
  ```
@@ -98,9 +100,9 @@ For configuring the metrics, the following properties can be used:
  |     Property      |   Default value |         Possible values         |                                               Description                                                      |
  | ----------------- | --------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
  | alias             | metric name     | Any string                      | The substitute name to be used in the metric browser instead of metric name.                                   |
- | aggregationType   | "AVERAGE"       | "AVERAGE", "SUM", "OBSERVATION" | [Aggregation qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)    |
- | timeRollUpType    | "AVERAGE"       | "AVERAGE", "SUM", "CURRENT"     | [Time roll-up qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)   |
- | clusterRollUpType | "INDIVIDUAL"    | "INDIVIDUAL", "COLLECTIVE"      | [Cluster roll-up qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)|
+ | aggregationType   | "AVERAGE"       | "AVERAGE", "SUM", "OBSERVATION" | [Aggregation qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)    |
+ | timeRollUpType    | "AVERAGE"       | "AVERAGE", "SUM", "CURRENT"     | [Time roll-up qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)   |
+ | clusterRollUpType | "INDIVIDUAL"    | "INDIVIDUAL", "COLLECTIVE"      | [Cluster roll-up qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)|
  | multiplier        | 1               | Any number                      | Value with which the metric needs to be multiplied.                                                            |
  | convert           | null            | Any key value map               | Set of key value pairs that indicates the value to which the metrics need to be transformed. eg: UP:1, OPEN:1  |
  | delta             | false           | true, false                     | If enabled, gives the delta values of metrics instead of actual values.                                        |
@@ -148,8 +150,8 @@ Always feel free to fork and contribute any changes directly here on [GitHub](ht
 |          Name            |  Version   |
 |--------------------------|------------|
 |Extension Version         |2.2.1       |
-|Controller Compatibility  |4.5 or Later|
-|Agent Compatibility  |4.5.13 or Later|
 |Product Tested On         |3.9.2       |
 |Last Update               |04/02/2021  |
 |Changes list              |[ChangeLog](https://github.com/Appdynamics/muleesb-monitoring-extension/blob/master/CHANGELOG.md)|
+ 
+**Note**: While extensions are maintained and supported by customers under the open-source licensing model, they interact with agents and Controllers that are subject to [AppDynamics’ maintenance and support policy](https://docs.appdynamics.com/latest/en/product-and-release-announcements/maintenance-support-for-software-versions). Some extensions have been tested with AppDynamics 4.5.13+ artifacts, but you are strongly recommended against using versions that are no longer supported. 
